@@ -6,12 +6,12 @@
   >
     <div class="flex justify-between items-center w-full mx-auto px-4 sm:px-6 lg:px-8">
       <div class="grid gap-x-8 grid-flow-col auto-cols-max text-white font-medium">
-        <NuxtLink to="/">Dashboard</NuxtLink>
-        <NuxtLink to="/">User</NuxtLink>
-        <NuxtLink to="/">Company</NuxtLink>
-        <NuxtLink to="/">Topic</NuxtLink>
-        <NuxtLink to="/">Tag</NuxtLink>
-        <NuxtLink to="/">Post</NuxtLink>
+        <NuxtLink to="/" :exact="true">Dashboard</NuxtLink>
+        <NuxtLink to="/user">User</NuxtLink>
+        <NuxtLink to="/company">Company</NuxtLink>
+        <NuxtLink to="/topic">Topic</NuxtLink>
+        <NuxtLink to="/tag">Tag</NuxtLink>
+        <NuxtLink to="/post">Post</NuxtLink>
       </div>
       <div class="d-flex items-center test">
         <!--        <v-text-field hide-details
@@ -90,12 +90,16 @@ export default {
   min-height: 40px !important;
 }
 
-.nuxt-link-active {
+.v-application a[data-v-02eb483d] {
   color: white;
 }
 
 .nuxt-link-active:hover {
   color: #1976d2;
+}
+
+.nuxt-link-exact-active, .nuxt-link-active {
+  color: #1976d2 !important;
 }
 </style>
 

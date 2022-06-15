@@ -1,5 +1,6 @@
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
+  ssr: false, // Disable Server Side rendering
   head: {
     title: 'project1_frontend',
     meta: [
@@ -47,6 +48,7 @@ export default {
     '@nuxtjs/pwa',
     // https://go.nuxtjs.dev/content
     '@nuxt/content',
+    'nuxt-sweetalert2'
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios

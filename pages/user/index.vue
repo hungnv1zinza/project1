@@ -10,25 +10,15 @@
         vertical
       ></v-divider>
       <v-spacer></v-spacer>
-      <v-btn
-        color="primary"
-        dark
-        class="mb-2"
-      >
-        New Item
-      </v-btn>
-
-      <v-dialog v-model="dialogDelete" max-width="500px">
-        <v-card>
-          <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
-          <v-card-actions>
-            <v-spacer></v-spacer>
-            <v-btn color="blue darken-1" text @click="closeDelete">Cancel</v-btn>
-            <v-btn color="blue darken-1" text @click="deleteItemConfirm">OK</v-btn>
-            <v-spacer></v-spacer>
-          </v-card-actions>
-        </v-card>
-      </v-dialog>
+      <NuxtLink to="/user/add" >
+        <v-btn
+          color="primary"
+          dark
+          class="mb-2"
+        >
+          New User
+        </v-btn>
+      </NuxtLink>
     </v-toolbar>
     <v-data-table
       v-model="selected"
@@ -38,6 +28,17 @@
       show-select
       class="elevation-1 mt-8 border"
     >
+      <template v-slot:item.dob="{ item }">
+        <span>{{ formatDateEN(item.dob) }}</span>
+      </template>
+      <template v-slot:item.status="{ item }">
+        <v-chip
+          :color="getColor(item.status)"
+          dark
+        >
+          {{ item.status == 1 ? 'Active' : 'Inactive' }}
+        </v-chip>
+      </template>
       <template v-slot:item.actions="{ item }">
         <v-icon
           small
@@ -48,7 +49,7 @@
         </v-icon>
         <v-icon
           small
-          @click="deleteItem(item)"
+          @click="showAlertConfirm(item)"
         >
           mdi-delete
         </v-icon>
@@ -67,26 +68,11 @@
 
 <script>
 
-// import UserList from "~/components/user/UserList";
-
 export default {
   name: 'UserPage',
-  // components: {UserList},
   layout: 'default',
   data() {
     return {
-      breadcrumbs: [
-        {
-          text: 'Dashboard',
-          disabled: false,
-          href: '/',
-        },
-        {
-          text: 'User',
-          disabled: true,
-          href: '#',
-        },
-      ],
       singleSelect: false,
       selected: [],
       dialogDelete: false,
@@ -98,111 +84,67 @@ export default {
           sortable: false,
           value: 'name',
         },
-        {text: 'Dob', value: 'calories'},
-        {text: 'Status', value: 'fat'},
-        {text: 'Role', value: 'carbs'},
+        {text: 'Dob', value: 'dob', dataType: "Date"},
+        {text: 'Status', value: 'status'},
+        {text: 'Role', value: 'name'},
         {text: '', value: 'actions', sortable: false},
       ],
-      desserts: [
-        {
-          name: 'Frozen Yogurt',
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0,
-        },
-        {
-          name: 'Ice cream sandwich',
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3,
-        },
-        {
-          name: 'Eclair',
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0,
-        },
-        {
-          name: 'Cupcake',
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3,
-        },
-        {
-          name: 'Gingerbread',
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9,
-        },
-        {
-          name: 'Jelly bean',
-          calories: 375,
-          fat: 0.0,
-          carbs: 94,
-          protein: 0.0,
-        },
-        {
-          name: 'Lollipop',
-          calories: 392,
-          fat: 0.2,
-          carbs: 98,
-          protein: 0,
-        },
-        {
-          name: 'Honeycomb',
-          calories: 408,
-          fat: 3.2,
-          carbs: 87,
-          protein: 6.5,
-        },
-        {
-          name: 'Donut',
-          calories: 452,
-          fat: 25.0,
-          carbs: 51,
-          protein: 4.9,
-        },
-        {
-          name: 'KitKat',
-          calories: 518,
-          fat: 26.0,
-          carbs: 65,
-          protein: 7,
-        },
-      ],
+      desserts: [],
       defaultItem: {
         name: '',
-        calories: 0,
-        fat: 0,
-        carbs: 0,
-        protein: 0,
+        dob: '',
+        status: 1,
+        role: '',
       },
     }
   },
+  async fetch() {
+    this.desserts = await fetch(
+      'http://project1.test/api/user', {
+        method: "GET"
+      }
+    ).then(res => res.json())
+  },
   methods: {
-    editItem (item) {
+    showAlertConfirm(item){
+      this.$swal({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      }).then((result) => {
+        if (result.value) {
+          this.deleteItemConfirm(item)
+          this.$swal(
+            'Deleted!',
+            'Your file has been deleted.',
+            'success'
+          )
+        }
+      });
+    },
+    getColor (status) {
+      if (status == 1) return 'green'
+      else return 'red'
+    },
+    formatDateEN(date) {
+      const options = {year: 'numeric', month: 'numeric', day: 'numeric'}
+      return new Date(date).toLocaleDateString('en-GB', options)
+    },
+    editItem(item) {
       this.editedIndex = this.desserts.indexOf(item)
       this.editedItem = Object.assign({}, item)
       this.dialog = true
     },
 
-    deleteItem (item) {
-      this.editedIndex = this.desserts.indexOf(item)
-      this.editedItem = Object.assign({}, item)
-      this.dialogDelete = true
+    deleteItemConfirm(item) {
+      this.desserts.splice(this.desserts.indexOf(item), 1)
     },
 
-    deleteItemConfirm () {
-      this.desserts.splice(this.editedIndex, 1)
-      this.closeDelete()
-    },
-
-    close () {
+    close() {
       this.dialog = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
@@ -210,7 +152,7 @@ export default {
       })
     },
 
-    closeDelete () {
+    closeDelete() {
       this.dialogDelete = false
       this.$nextTick(() => {
         this.editedItem = Object.assign({}, this.defaultItem)
@@ -218,7 +160,7 @@ export default {
       })
     },
 
-    save () {
+    save() {
       if (this.editedIndex > -1) {
         Object.assign(this.desserts[this.editedIndex], this.editedItem)
       } else {
@@ -248,10 +190,10 @@ export default {
     },
   },
   watch: {
-    dialog (val) {
+    dialog(val) {
       val || this.close()
     },
-    dialogDelete (val) {
+    dialogDelete(val) {
       val || this.closeDelete()
     },
   },
